@@ -8,11 +8,16 @@
   },
   "dependencies": {
     "request": "^2.88.0",
-    "xml2json-temporary": "^0.11.2"
+    "xml2json-temporary": "^0.11.2",
+    "lodash": "^4.17.11"
   },
   "devDependencies": {},
   "scripts": {
+    "lint": "eslint lib/**/*.js test/**/*.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git+https://github.com/epreston/sym-dlp-iru.js.git"
   },
   "keywords": [
     "symantec",
