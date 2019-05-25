@@ -1,0 +1,2418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.vontu.com/v2011/enforce/webservice/incident" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/wsdl/" name="IncidentService" targetNamespace="http://www.vontu.com/v2011/enforce/webservice/incident">
+	<types>
+		<xs:schema xmlns:tns="http://www.vontu.com/enforce/export/incident/common/schema" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="1.0" targetNamespace="http://www.vontu.com/enforce/export/incident/common/schema">
+			<xs:complexType name="MessageSource">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="sourceType" type="xs:string" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkRecipientType">
+				<xs:sequence>
+					<xs:element name="recipientIdentifier" type="xs:string"/>
+					<xs:element name="IPAddress" type="xs:string"/>
+					<xs:element name="port" type="xs:int" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="recipientId" type="xs:int" use="required"/>
+				<xs:attribute name="recipientIdLong" type="xs:long" use="required"/>
+			</xs:complexType>
+			<xs:complexType name="DocumentViolationType">
+				<xs:sequence>
+					<xs:element name="documentProfileName" type="xs:string"/>
+					<xs:element name="documentPath" type="xs:string"/>
+					<xs:element name="exactMatch" type="xs:boolean" minOccurs="0"/>
+					<xs:element name="matchPercentage" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentHistoryEntryType">
+				<xs:sequence>
+					<xs:element name="user" type="xs:string"/>
+					<xs:element name="date" type="xs:dateTime"/>
+					<xs:element name="actionType" type="tns:IncidentHistoryActionType"/>
+					<xs:element name="detail" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentHistoryActionType">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="actionTypeId" type="xs:int" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="ScanAssignmentType">
+				<xs:simpleContent>
+					<xs:extension base="xs:anySimpleType">
+						<xs:attribute name="scanId" type="xs:int"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="PolicyRuleViolationType">
+				<xs:sequence>
+					<xs:element name="policyRule" type="tns:PolicyRuleType"/>
+					<xs:element name="violation" type="tns:ViolationType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="PolicyRuleType">
+				<xs:sequence>
+					<xs:element name="ruleName" type="xs:string"/>
+				</xs:sequence>
+				<xs:attribute name="ruleId" type="xs:int"/>
+			</xs:complexType>
+			<xs:complexType name="ViolationType">
+				<xs:sequence>
+					<xs:element name="documentViolation" type="tns:DocumentViolationType" minOccurs="0"/>
+					<xs:element name="violationText" type="xs:string" minOccurs="0"/>
+					<xs:element name="fileSizeViolation" type="tns:FileSizeViolationType" minOccurs="0"/>
+					<xs:element name="imageViolation" type="tns:ImageViolationType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="FileSizeViolationType">
+				<xs:sequence>
+					<xs:element name="violatingFileSize" type="xs:integer"/>
+					<xs:element name="units" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="ImageViolationType">
+				<xs:sequence>
+					<xs:element name="violationImageIdentifier" type="xs:string"/>
+					<xs:element name="confidence" type="xs:string" minOccurs="0"/>
+					<xs:element name="fillScore" type="xs:integer" minOccurs="0"/>
+					<xs:element name="queryFile" type="xs:string" minOccurs="0"/>
+					<xs:element name="gallery" type="xs:string" minOccurs="0"/>
+					<xs:element name="profileName" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="NetworkOriginatorType">
+				<xs:sequence>
+					<xs:element name="senderIdentifier" type="xs:string"/>
+					<xs:element name="IPAddress" type="xs:string"/>
+					<xs:element name="port" type="xs:int" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="originatorId" type="xs:int" use="required"/>
+				<xs:attribute name="originatorIdLong" type="xs:long" use="required"/>
+			</xs:complexType>
+			<xs:complexType name="NetworkEnvironment">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="networkEnvironmentType" type="xs:string" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="IncidentStatusType">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="statusId" type="xs:int" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="BlockedStatusType">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="blockedStatusId" type="xs:int"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="MessageComponentType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string" minOccurs="0"/>
+					<xs:element name="documentFormat" type="xs:string"/>
+					<xs:element name="componentType">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="typeId" type="xs:int"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="ruleViolationCount" type="xs:int" minOccurs="0"/>
+					<xs:element name="policyRuleViolation" type="tns:PolicyRuleViolationType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="componentId" type="xs:long"/>
+			</xs:complexType>
+			<xs:complexType name="DataOwnerType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string" minOccurs="0"/>
+					<xs:element name="email" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="MessageType">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="typeId" type="xs:int" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="IncidentSeverityType">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="severityId" type="xs:int" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="CustomAttributeType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="value" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="CustomAttributeGroupType">
+				<xs:sequence>
+					<xs:element name="customAttribute" type="tns:CustomAttributeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="name" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="ACLType">
+				<xs:sequence>
+					<xs:element name="principal" type="xs:string"/>
+					<xs:element name="type">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="id" type="xs:string" use="required"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="grantOrDeny">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="id" type="xs:string" use="required"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="permission">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="id" type="xs:string" use="required"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:complexType>
+		</xs:schema>
+		<xs:schema xmlns:tns="http://www.vontu.com/enforce/export/incident/schema" xmlns:ns1="http://www.vontu.com/enforce/export/incident/common/schema" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.vontu.com/enforce/export/incident/schema" elementFormDefault="qualified" version="1.0">
+			<xs:element name="IncidentListExport">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="incident" type="tns:IncidentExportType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:complexType name="NetworkIMIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentExportType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentExportType">
+						<xs:sequence>
+							<xs:element name="messageDate" type="xs:dateTime"/>
+							<xs:element name="originatorIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="recipientIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="hasAttachment" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="networkEnvironment" type="ns1:NetworkEnvironment" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="IncidentExportType">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:long"/>
+					<xs:element name="incidentCreationDate" type="xs:dateTime"/>
+					<xs:element name="detectionDate" type="xs:dateTime"/>
+					<xs:element name="severity" type="ns1:IncidentSeverityType"/>
+					<xs:element name="status" type="ns1:IncidentStatusType"/>
+					<xs:element name="messageSource" type="ns1:MessageSource"/>
+					<xs:element name="messageType" type="ns1:MessageType"/>
+					<xs:element name="policyName" type="xs:string"/>
+					<xs:element name="policyLabel" type="xs:string"/>
+					<xs:element name="policyVersion" type="xs:int"/>
+					<xs:element name="blockedStatus" type="ns1:BlockedStatusType"/>
+					<xs:element name="matchCount" type="xs:int"/>
+					<xs:element name="detectionServer" type="xs:string"/>
+					<xs:element name="numberOfMatchedTerms" type="xs:int" minOccurs="0"/>
+					<xs:element name="violation" type="ns1:ViolationType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="customAttributeGroup" type="ns1:CustomAttributeGroupType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="incidentHistory" type="ns1:IncidentHistoryEntryType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="dataOwner" type="ns1:DataOwnerType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="ClassificationIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentExportType">
+						<xs:sequence>
+							<xs:element name="messageDate" type="xs:dateTime"/>
+							<xs:element name="originatorIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="recipientIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="hasAttachment" type="xs:boolean" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="ClassificationExchangeIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:ClassificationIncidentExportType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="MobileIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentExportType">
+						<xs:sequence>
+							<xs:element name="messageDate" type="xs:dateTime"/>
+							<xs:element name="originatorIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="recipientIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="hasAttachment" type="xs:boolean" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="MobileFTPIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:MobileIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileInfo" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="MobileHTTPIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:MobileIncidentExportType">
+						<xs:sequence>
+							<xs:element name="HTTPS" type="xs:boolean"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="MobileRESTIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:MobileIncidentExportType">
+						<xs:sequence>
+							<xs:element name="applicationName" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUrl" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceOS" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkDirection" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceType" type="xs:string" minOccurs="0"/>
+							<xs:element name="isTrustedDevice" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationCoordsLatitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationCoordsLongitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkProtocol" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpMethod" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUserAgent" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpCookies" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpSiteRiskScore" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationIsInsideOffice" type="xs:string" minOccurs="0"/>
+							<xs:element name="restRequestId" type="xs:string" minOccurs="0"/>
+							<xs:element name="restCustom" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileTag" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileFolder" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentExportType">
+						<xs:sequence>
+							<xs:element name="eventDate" type="xs:dateTime"/>
+							<xs:element name="applicationName" type="xs:string" minOccurs="0"/>
+							<xs:element name="applicationPath" type="xs:string" minOccurs="0"/>
+							<xs:element name="userName" type="xs:string" minOccurs="0"/>
+							<xs:element name="machineName" type="xs:string" minOccurs="0"/>
+							<xs:element name="userJustification" type="xs:string" minOccurs="0"/>
+							<xs:element name="superseded" type="xs:string"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointClipboardIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentExportType">
+						<xs:sequence>
+							<xs:element name="applicationWindowTitle" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointPrintFaxIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentExportType">
+						<xs:sequence>
+							<xs:element name="printerName" type="xs:string" minOccurs="0"/>
+							<xs:element name="printJobTitle" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFilePath" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointFileSystemIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFilePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="volumeName" type="xs:string" minOccurs="0"/>
+							<xs:element name="DOSVolumeName" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointRemovableStorageIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFilePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="volumeName" type="xs:string" minOccurs="0"/>
+							<xs:element name="DOSVolumeName" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceInstanceID" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointNetworkIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentExportType">
+						<xs:sequence>
+							<xs:element name="originatorIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="recipientIdentifier" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointIMIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentExportType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointFTPIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileInfo" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointNNTPIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointEmailIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointHTTPIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="HTTPS" type="xs:boolean"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="RestIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentExportType">
+						<xs:sequence>
+							<xs:element name="messageDate" type="xs:dateTime"/>
+							<xs:element name="applicationName" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUrl" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceOS" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkDirection" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceType" type="xs:string" minOccurs="0"/>
+							<xs:element name="isTrustedDevice" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceIsTrusted" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="locationCoordsLatitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationCoordsLongitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkProtocol" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpMethod" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUserAgent" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpCookies" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpSiteRiskScore" type="xs:long" minOccurs="0"/>
+							<xs:element name="locationIsInsideOffice" type="xs:string" minOccurs="0"/>
+							<xs:element name="insideOfficeLocation" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="restRequestId" type="xs:string" minOccurs="0"/>
+							<xs:element name="restCustom" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileTag" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileFolder" type="xs:string" minOccurs="0"/>
+							<xs:element name="serviceScore" type="xs:int" minOccurs="0"/>
+							<xs:element name="siteClassification" type="xs:string" minOccurs="0"/>
+							<xs:element name="serviceClassification" type="xs:string" minOccurs="0"/>
+							<xs:element name="transactionId" type="xs:string" minOccurs="0"/>
+							<xs:element name="requestId" type="xs:string" minOccurs="0"/>
+							<xs:element name="applicationReportName" type="xs:string" minOccurs="0"/>
+							<xs:element name="compliant" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="unmanaged" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="personal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="userInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposed" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposedAllInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposedPublic" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="regionCountry" type="xs:string" minOccurs="0"/>
+							<xs:element name="dataType" type="xs:string" minOccurs="0"/>
+							<xs:element name="userActivityType" type="xs:string" minOccurs="0"/>
+							<xs:element name="applicationInstanceId" type="xs:string" minOccurs="0"/>
+							<xs:element name="description" type="xs:string" minOccurs="0"/>
+							<xs:element name="activityCount" type="xs:long" minOccurs="0"/>
+							<xs:element name="creatorId" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposuresExternalCollaborators" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposuresInternalCollaborators" type="xs:string" minOccurs="0"/>
+							<xs:element name="sharedWith" type="xs:string" minOccurs="0"/>
+							<xs:element name="groupMembership" type="xs:string" minOccurs="0"/>
+							<xs:element name="authSender" type="xs:string" minOccurs="0"/>
+							<xs:element name="authRecipient" type="xs:string" minOccurs="0"/>
+							<xs:element name="documentId" type="xs:string" minOccurs="0"/>
+							<xs:element name="parentFolderIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="documentType" type="xs:string" minOccurs="0"/>
+							<xs:element name="logId" type="xs:string" minOccurs="0"/>
+							<xs:element name="Owner" type="xs:string" minOccurs="0"/>
+							<xs:element name="sharepoint" type="xs:string" minOccurs="0"/>
+							<xs:element name="sharingUrl" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposedCount" type="xs:long" minOccurs="0"/>
+							<xs:element name="userId" type="xs:string" minOccurs="0"/>
+							<xs:element name="userName" type="xs:string" minOccurs="0"/>
+							<xs:element name="threatScore" type="xs:long" minOccurs="0"/>
+							<xs:element name="httpBrowser" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkDocExposure" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkIncident" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkServiceApplication" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkUba" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkUserExposures" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationRegion" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkRecipientIp" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkRecipientPort" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkSenderIp" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkSenderPort" type="xs:long" minOccurs="0"/>
+							<xs:element name="fileCreated" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastAccessed" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModified" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentExportType">
+						<xs:sequence>
+							<xs:element name="targetServer" type="xs:string" minOccurs="0"/>
+							<xs:element name="target" type="xs:string" minOccurs="0"/>
+							<xs:element name="documentName" type="xs:string" minOccurs="0"/>
+							<xs:element name="repositoryLocation" type="xs:string" minOccurs="0"/>
+							<xs:element name="URL" type="xs:string" minOccurs="0"/>
+							<xs:element name="contentRootPath" type="xs:string" minOccurs="0"/>
+							<xs:element name="seenBefore" type="xs:string" minOccurs="0"/>
+							<xs:element name="superseded" type="xs:string"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverExchangeScannerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverBoxCrawlerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileCreatedBy" type="xs:string"/>
+							<xs:element name="fileModifiedBy" type="xs:string"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileOwnerEmail" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCollaborator" nillable="true" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="collaborator" type="xs:string"/>
+										<xs:element name="role">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute name="id" type="xs:string" use="required"/>
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverExchangeCrawlerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+							<xs:element name="originatorIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="recipientIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverSharepointScannerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="owner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverGenericScannerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverFileSystemIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="remediationLocation" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverOneDriveCrawlerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileCreatedBy" type="xs:string"/>
+							<xs:element name="fileModifiedBy" type="xs:string"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCollaborator" nillable="true" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="collaborator" type="xs:string"/>
+										<xs:element name="role">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute name="id" type="xs:string" use="required"/>
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverFileSystemScannerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreatedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverDocumentumScannerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverLivelinkScannerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverWebServerScannerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="name" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverWebServiceIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="name" type="xs:string" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverSharePointCrawlerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverSQLDatabaseIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverEndpointFileSystemIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverLotusNotesIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverDropboxCrawlerIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileCreatedBy" type="xs:string"/>
+							<xs:element name="fileModifiedBy" type="xs:string"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCollaborator" nillable="true" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="collaborator" type="xs:string"/>
+										<xs:element name="role">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute name="id" type="xs:string" use="required"/>
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkEmailIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkHTTPIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="HTTPS" type="xs:boolean"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkFTPIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="fileInfo" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkNNTPIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkUniversalIncidentExportType">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentExportType">
+						<xs:sequence>
+							<xs:element name="protocolName" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+		</xs:schema>
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://www.vontu.com/v2011/enforce/webservice/incident">
+			<xs:element name="in" type="xs:string"/>
+			<xs:element name="out" type="xs:string"/>
+		</xs:schema>
+		<xs:schema xmlns:tns="http://www.vontu.com/v2011/enforce/webservice/incident/common/schema" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="1.0" targetNamespace="http://www.vontu.com/v2011/enforce/webservice/incident/common/schema">
+			<xs:complexType name="MessageSource">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="sourceType" type="xs:string" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkRecipientType">
+				<xs:sequence>
+					<xs:element name="recipientIdentifier" type="xs:string"/>
+					<xs:element name="IPAddress" type="xs:string"/>
+					<xs:element name="port" type="xs:int" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="recipientId" type="xs:int" use="required"/>
+				<xs:attribute name="recipientIdLong" type="xs:long" use="required"/>
+			</xs:complexType>
+			<xs:complexType name="DocumentViolationType">
+				<xs:sequence>
+					<xs:element name="documentProfileName" type="xs:string"/>
+					<xs:element name="documentPath" type="xs:string"/>
+					<xs:element name="exactMatch" type="xs:boolean" minOccurs="0"/>
+					<xs:element name="matchPercentage" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentHistoryEntryType">
+				<xs:sequence>
+					<xs:element name="user" type="xs:string"/>
+					<xs:element name="date" type="xs:dateTime"/>
+					<xs:element name="actionType" type="tns:IncidentHistoryActionType"/>
+					<xs:element name="detail" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentHistoryActionType">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="actionTypeId" type="xs:int" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="ScanAssignmentType">
+				<xs:simpleContent>
+					<xs:extension base="xs:anySimpleType">
+						<xs:attribute name="scanId" type="xs:int"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:complexType name="PolicyRuleViolationType">
+				<xs:sequence>
+					<xs:element name="policyRule" type="tns:PolicyRuleType"/>
+					<xs:element name="violation" type="tns:ViolationType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="PolicyRuleType">
+				<xs:sequence>
+					<xs:element name="ruleName" type="xs:string"/>
+				</xs:sequence>
+				<xs:attribute name="ruleId" type="xs:int"/>
+			</xs:complexType>
+			<xs:complexType name="ViolationType">
+				<xs:sequence>
+					<xs:element name="documentViolation" type="tns:DocumentViolationType" minOccurs="0"/>
+					<xs:element name="violationText" type="xs:string" minOccurs="0"/>
+					<xs:element name="fileSizeViolation" type="tns:FileSizeViolationType" minOccurs="0"/>
+					<xs:element name="imageViolation" type="tns:ImageViolationType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="FileSizeViolationType">
+				<xs:sequence>
+					<xs:element name="violatingFileSize" type="xs:integer"/>
+					<xs:element name="units" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="ImageViolationType">
+				<xs:sequence>
+					<xs:element name="violationImageIdentifier" type="xs:string"/>
+					<xs:element name="confidence" type="xs:string" minOccurs="0"/>
+					<xs:element name="fillScore" type="xs:integer" minOccurs="0"/>
+					<xs:element name="queryFile" type="xs:string" minOccurs="0"/>
+					<xs:element name="gallery" type="xs:string" minOccurs="0"/>
+					<xs:element name="profileName" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="NetworkOriginatorType">
+				<xs:sequence>
+					<xs:element name="senderIdentifier" type="xs:string"/>
+					<xs:element name="IPAddress" type="xs:string"/>
+					<xs:element name="port" type="xs:int" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="originatorId" type="xs:int" use="required"/>
+				<xs:attribute name="originatorIdLong" type="xs:long" use="required"/>
+			</xs:complexType>
+			<xs:complexType name="NetworkEnvironment">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="networkEnvironmentType" type="xs:string" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:simpleType name="IncidentStatusType">
+				<xs:restriction base="xs:string"/>
+			</xs:simpleType>
+			<xs:simpleType name="BlockedStatusType">
+				<xs:restriction base="xs:string"/>
+			</xs:simpleType>
+			<xs:complexType name="MessageComponentType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string" minOccurs="0"/>
+					<xs:element name="documentFormat" type="xs:string"/>
+					<xs:element name="componentType">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="typeId" type="xs:int"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="ruleViolationCount" type="xs:int" minOccurs="0"/>
+					<xs:element name="policyRuleViolation" type="tns:PolicyRuleViolationType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="componentId" type="xs:int"/>
+				<xs:attribute name="componentLongId" type="xs:long"/>
+			</xs:complexType>
+			<xs:complexType name="DataOwnerType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string" minOccurs="0"/>
+					<xs:element name="email" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="MessageType">
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="typeId" type="xs:int" use="required"/>
+					</xs:extension>
+				</xs:simpleContent>
+			</xs:complexType>
+			<xs:simpleType name="IncidentSeverityType">
+				<xs:restriction base="xs:string"/>
+			</xs:simpleType>
+			<xs:complexType name="CustomAttributeType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="value" type="xs:string" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="CustomAttributeGroupType">
+				<xs:sequence>
+					<xs:element name="customAttribute" type="tns:CustomAttributeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="name" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="ACLType">
+				<xs:sequence>
+					<xs:element name="principal" type="xs:string"/>
+					<xs:element name="type">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="id" type="xs:string" use="required"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="grantOrDeny">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="id" type="xs:string" use="required"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="permission">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="id" type="xs:string" use="required"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:complexType>
+		</xs:schema>
+		<xs:schema xmlns:tns="http://www.vontu.com/v2011/enforce/webservice/incident/schema" xmlns:ns1="http://www.vontu.com/v2011/enforce/webservice/incident/common/schema" xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.vontu.com/v2011/enforce/webservice/incident/schema" elementFormDefault="qualified" version="1.0">
+			<xs:import namespace="http://www.w3.org/2005/05/xmlmime" schemaLocation="http://www.w3.org/2005/05/xmlmime"/>
+			<xs:element name="AuthenticationFault" type="tns:AuthenticationFaultType"/>
+			<xs:element name="AuthorizationFault" type="tns:AuthorizationFaultType"/>
+			<xs:element name="BasicFault" type="tns:BasicFault"/>
+			<xs:element name="ComponentNotFoundFault" type="tns:ComponentNotFoundFaultType"/>
+			<xs:element name="IncidentNotFoundFault" type="tns:IncidentNotFoundFaultType"/>
+			<xs:element name="InvalidRequestFault" type="tns:InvalidRequestFaultType"/>
+			<xs:element name="customAttributeList" type="tns:customAttributeList"/>
+			<xs:element name="incidentBinariesRequest" type="tns:IncidentBinariesRequest"/>
+			<xs:element name="incidentBinariesResponse" type="tns:IncidentBinariesResponse"/>
+			<xs:element name="incidentDetailRequest" type="tns:IncidentDetailRequest"/>
+			<xs:element name="incidentDetailResponse" type="tns:IncidentDetailResponse"/>
+			<xs:element name="incidentListRequest" type="tns:IncidentListRequest"/>
+			<xs:element name="incidentListResponse" type="tns:IncidentListResponse"/>
+			<xs:element name="incidentStatusList" type="tns:incidentStatusList"/>
+			<xs:element name="incidentUpdateRequest" type="tns:IncidentUpdateRequest"/>
+			<xs:element name="incidentUpdateResponse" type="tns:IncidentUpdateResponse"/>
+			<xs:element name="incidentViolationsRequest" type="tns:IncidentViolationsRequest"/>
+			<xs:element name="incidentViolationsResponse" type="tns:IncidentViolationsResponse"/>
+			<xs:complexType name="EndpointRemovableStorageIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFilePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="volumeName" type="xs:string" minOccurs="0"/>
+							<xs:element name="DOSVolumeName" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="deviceInstanceID" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointIncidentDetailType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentDetailType">
+						<xs:sequence>
+							<xs:element name="eventDate" type="xs:dateTime"/>
+							<xs:element name="applicationName" type="xs:string" minOccurs="0"/>
+							<xs:element name="applicationPath" type="xs:string" minOccurs="0"/>
+							<xs:element name="userName" type="xs:string" minOccurs="0"/>
+							<xs:element name="machineName" type="xs:string" minOccurs="0"/>
+							<xs:element name="machineIP" type="xs:string" minOccurs="0"/>
+							<xs:element name="userJustification" type="xs:string" minOccurs="0"/>
+							<xs:element name="superseded" type="xs:string"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="IncidentDetailType">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int"/>
+					<xs:element name="uniqueMessageId" type="xs:string"/>
+					<xs:element name="incidentCreationDate" type="xs:dateTime" minOccurs="0"/>
+					<xs:element name="detectionDate" type="xs:dateTime" minOccurs="0"/>
+					<xs:element name="severity" type="ns1:IncidentSeverityType" minOccurs="0"/>
+					<xs:element name="status" type="ns1:IncidentStatusType" minOccurs="0"/>
+					<xs:element name="messageSource" type="ns1:MessageSource" minOccurs="0"/>
+					<xs:element name="messageType" type="ns1:MessageType" minOccurs="0"/>
+					<xs:element name="policy" type="tns:PolicyType" minOccurs="0"/>
+					<xs:element name="violatedPolicyRule" type="ns1:PolicyRuleType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="otherViolatedPolicy" type="tns:PolicyType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="blockedStatus" type="ns1:BlockedStatusType" minOccurs="0"/>
+					<xs:element name="matchCount" type="xs:int" minOccurs="0"/>
+					<xs:element name="ruleViolationCount" type="xs:int" minOccurs="0"/>
+					<xs:element name="detectionServer" type="xs:string" minOccurs="0"/>
+					<xs:element name="customAttributeGroup" type="ns1:CustomAttributeGroupType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="incidentHistory" type="ns1:IncidentHistoryEntryType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="dataOwner" type="ns1:DataOwnerType" minOccurs="0"/>
+					<xs:element name="incidentLongId" type="xs:long"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="PolicyType">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string"/>
+					<xs:element name="version" type="xs:int"/>
+					<xs:element name="label" type="xs:string"/>
+				</xs:sequence>
+				<xs:attribute name="policyId" type="xs:int"/>
+			</xs:complexType>
+			<xs:complexType name="RestIncidentDetailType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentDetailType">
+						<xs:sequence>
+							<xs:element name="messageDate" type="xs:dateTime"/>
+							<xs:element name="originator" type="ns1:NetworkOriginatorType" minOccurs="0"/>
+							<xs:element name="recipient" type="ns1:NetworkRecipientType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="messageBodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageBody" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="environment" type="ns1:NetworkEnvironment" minOccurs="0"/>
+							<xs:element name="applicationName" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUrl" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceOS" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceType" type="xs:string" minOccurs="0"/>
+							<xs:element name="isTrustedDevice" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceIsTrusted" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="locationCoordsLatitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationCoordsLongitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkProtocol" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpMethod" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUserAgent" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpCookies" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpSiteRiskScore" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationIsInsideOffice" type="xs:string" minOccurs="0"/>
+							<xs:element name="insideOfficeLocation" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="restRequestId" type="xs:string" minOccurs="0"/>
+							<xs:element name="restCustom" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="RestDIMIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:RestIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="networkDirection" type="xs:string" minOccurs="0"/>
+							<xs:element name="serviceScore" type="xs:int" minOccurs="0"/>
+							<xs:element name="siteClassification" type="xs:string" minOccurs="0"/>
+							<xs:element name="serviceClassification" type="xs:string" minOccurs="0"/>
+							<xs:element name="transactionId" type="xs:string" minOccurs="0"/>
+							<xs:element name="requestId" type="xs:string" minOccurs="0"/>
+							<xs:element name="applicationReportName" type="xs:string" minOccurs="0"/>
+							<xs:element name="compliant" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="unmanaged" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="personal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="userInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposed" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposedAllInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposedPublic" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="regionCountry" type="xs:string" minOccurs="0"/>
+							<xs:element name="dataType" type="xs:string" minOccurs="0"/>
+							<xs:element name="userActivityType" type="xs:string" minOccurs="0"/>
+							<xs:element name="applicationInstanceId" type="xs:string" minOccurs="0"/>
+							<xs:element name="activityCount" type="xs:long" minOccurs="0"/>
+							<xs:element name="creatorId" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposuresExternalCollaborators" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposuresInternalCollaborators" type="xs:string" minOccurs="0"/>
+							<xs:element name="groupMembership" type="xs:string" minOccurs="0"/>
+							<xs:element name="authSender" type="xs:string" minOccurs="0"/>
+							<xs:element name="authRecipient" type="xs:string" minOccurs="0"/>
+							<xs:element name="documentId" type="xs:string" minOccurs="0"/>
+							<xs:element name="parentFolderIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="documentType" type="xs:string" minOccurs="0"/>
+							<xs:element name="logId" type="xs:string" minOccurs="0"/>
+							<xs:element name="sharepoint" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposedCount" type="xs:long" minOccurs="0"/>
+							<xs:element name="userId" type="xs:string" minOccurs="0"/>
+							<xs:element name="userName" type="xs:string" minOccurs="0"/>
+							<xs:element name="threatScore" type="xs:long" minOccurs="0"/>
+							<xs:element name="httpBrowser" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkDocExposure" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkIncident" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkServiceApplication" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkUba" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkUserExposures" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationRegion" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkRecipientIp" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkRecipientPort" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkSenderIp" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkSenderPort" type="xs:long" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="RestDARIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:RestIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileTag" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileFolder" type="xs:string" minOccurs="0"/>
+							<xs:element name="serviceScore" type="xs:int" minOccurs="0"/>
+							<xs:element name="siteClassification" type="xs:string" minOccurs="0"/>
+							<xs:element name="serviceClassification" type="xs:string" minOccurs="0"/>
+							<xs:element name="transactionId" type="xs:string" minOccurs="0"/>
+							<xs:element name="requestId" type="xs:string" minOccurs="0"/>
+							<xs:element name="applicationReportName" type="xs:string" minOccurs="0"/>
+							<xs:element name="compliant" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="unmanaged" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="personal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="userInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposed" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposedAllInternal" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="docExposedPublic" type="xs:boolean" minOccurs="0"/>
+							<xs:element name="regionCountry" type="xs:string" minOccurs="0"/>
+							<xs:element name="dataType" type="xs:string" minOccurs="0"/>
+							<xs:element name="userActivityType" type="xs:string" minOccurs="0"/>
+							<xs:element name="applicationInstanceId" type="xs:string" minOccurs="0"/>
+							<xs:element name="description" type="xs:string" minOccurs="0"/>
+							<xs:element name="activityCount" type="xs:long" minOccurs="0"/>
+							<xs:element name="creatorId" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposuresExternalCollaborators" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposuresInternalCollaborators" type="xs:string" minOccurs="0"/>
+							<xs:element name="sharedWith" type="xs:string" minOccurs="0"/>
+							<xs:element name="groupMembership" type="xs:string" minOccurs="0"/>
+							<xs:element name="authSender" type="xs:string" minOccurs="0"/>
+							<xs:element name="authRecipient" type="xs:string" minOccurs="0"/>
+							<xs:element name="documentId" type="xs:string" minOccurs="0"/>
+							<xs:element name="parentFolderIdentifier" type="xs:string" minOccurs="0"/>
+							<xs:element name="documentType" type="xs:string" minOccurs="0"/>
+							<xs:element name="logId" type="xs:string" minOccurs="0"/>
+							<xs:element name="owner" type="xs:string" minOccurs="0"/>
+							<xs:element name="sharepoint" type="xs:string" minOccurs="0"/>
+							<xs:element name="sharingUrl" type="xs:string" minOccurs="0"/>
+							<xs:element name="docExposedCount" type="xs:long" minOccurs="0"/>
+							<xs:element name="userId" type="xs:string" minOccurs="0"/>
+							<xs:element name="userName" type="xs:string" minOccurs="0"/>
+							<xs:element name="threatScore" type="xs:long" minOccurs="0"/>
+							<xs:element name="httpBrowser" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkDocExposure" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkIncident" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkServiceApplication" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkUba" type="xs:string" minOccurs="0"/>
+							<xs:element name="linkUserExposures" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationRegion" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkRecipientIp" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkRecipientPort" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkSenderIp" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkSenderPort" type="xs:long" minOccurs="0"/>
+							<xs:element name="fileCreated" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastAccessed" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModified" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="MobileIncidentDetailType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentDetailType">
+						<xs:sequence>
+							<xs:element name="messageDate" type="xs:dateTime"/>
+							<xs:element name="originator" type="ns1:NetworkOriginatorType" minOccurs="0"/>
+							<xs:element name="recipient" type="ns1:NetworkRecipientType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="messageBodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageBody" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="MobileHTTPIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:MobileIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="HTTPS" type="xs:boolean"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="MobileRESTIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:MobileIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="applicationName" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUrl" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceOS" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkDirection" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceType" type="xs:string" minOccurs="0"/>
+							<xs:element name="isTrustedDevice" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationCoordsLatitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationCoordsLongitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkProtocol" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpMethod" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUserAgent" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpCookies" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpSiteRiskScore" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationIsInsideOffice" type="xs:string" minOccurs="0"/>
+							<xs:element name="restRequestId" type="xs:string" minOccurs="0"/>
+							<xs:element name="restCustom" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileTag" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileFolder" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="MobileFTPIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:MobileIncidentDetailType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverIncidentDetailType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentDetailType">
+						<xs:sequence>
+							<xs:element name="targetServer" type="xs:string" minOccurs="0"/>
+							<xs:element name="scan" type="ns1:ScanAssignmentType"/>
+							<xs:element name="contentRootPath" type="xs:string"/>
+							<xs:element name="target" type="xs:string" minOccurs="0"/>
+							<xs:element name="URL" type="xs:string" minOccurs="0"/>
+							<xs:element name="seenBefore" type="xs:string" minOccurs="0"/>
+							<xs:element name="superseded" type="xs:string"/>
+							<xs:element name="remediationLocation" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverFileSystemScannerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreatedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverSharepointScannerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="owner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverBoxCrawlerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileID" type="xs:string"/>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="sharedLinkInfo">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="hasLink" type="xs:boolean"/>
+										<xs:element name="details">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="passwordProtected" type="xs:boolean"/>
+													<xs:element name="downloadAllowed" type="xs:boolean"/>
+													<xs:element name="expirationDate" type="xs:date"/>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileCreatedBy" type="xs:string"/>
+							<xs:element name="fileModifiedBy" type="xs:string"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileOwnerEmail" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCollaborator" nillable="true" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="collaborator" type="xs:string"/>
+										<xs:element name="role">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute name="id" type="xs:string" use="required"/>
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverExchangeCrawlerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+							<xs:element name="originator" type="ns1:NetworkOriginatorType" minOccurs="0"/>
+							<xs:element name="recipient" type="ns1:NetworkRecipientType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="documentName" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageBodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageBody" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverWebServiceIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="name" type="xs:string"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageBody" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="component" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverDocumentumScannerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverWebServerScannerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="name" type="xs:string"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverDropboxCrawlerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileID" type="xs:string"/>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="sharedLinkInfo">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="hasLink" type="xs:boolean"/>
+										<xs:element name="details">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="passwordProtected" type="xs:boolean"/>
+													<xs:element name="expirationDate" type="xs:date"/>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileCreatedBy" type="xs:string"/>
+							<xs:element name="fileModifiedBy" type="xs:string"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCollaborator" nillable="true" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="collaborator" type="xs:string"/>
+										<xs:element name="role">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute name="id" type="xs:string" use="required"/>
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverOneDriveCrawlerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileID" type="xs:string"/>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileCreatedBy" type="xs:string"/>
+							<xs:element name="fileModifiedBy" type="xs:string"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCollaborator" nillable="true" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="collaborator" type="xs:string"/>
+										<xs:element name="role">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute name="id" type="xs:string" use="required"/>
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverLivelinkScannerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverSharePointCrawlerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="documentName" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageBodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageBody" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverEndpointFileSystemIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverFileSystemIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverExchangeScannerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="messageBodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageBody" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="owner" type="xs:string" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverGenericScannerIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="bodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="header" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="body" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="fileLastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverLotusNotesIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="documentName" type="xs:string"/>
+							<xs:element name="lastModifiedBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="createdBy" type="xs:string" minOccurs="0"/>
+							<xs:element name="lastModifiedDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="createDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="bodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="body" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="fileOwner" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string"/>
+							<xs:element name="fileACL" type="ns1:ACLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="DiscoverSQLDatabaseIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:DiscoverIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="bodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="header" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="body" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="LOB" type="ns1:MessageComponentType" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkIncidentDetailType">
+				<xs:complexContent>
+					<xs:extension base="tns:IncidentDetailType">
+						<xs:sequence>
+							<xs:element name="messageDate" type="xs:dateTime"/>
+							<xs:element name="originator" type="ns1:NetworkOriginatorType" minOccurs="0"/>
+							<xs:element name="recipient" type="ns1:NetworkRecipientType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="messageBodyContent" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageBody" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="environment" type="ns1:NetworkEnvironment" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkFTPIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentDetailType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkHTTPIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="HTTPS" type="xs:boolean"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkEmailIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkUniversalIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="protocolName" type="xs:string"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkRESTIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="applicationName" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUrl" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceOS" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkDirection" type="xs:string" minOccurs="0"/>
+							<xs:element name="deviceType" type="xs:string" minOccurs="0"/>
+							<xs:element name="isTrustedDevice" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationCoordsLatitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationCoordsLongitude" type="xs:string" minOccurs="0"/>
+							<xs:element name="networkProtocol" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpMethod" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpUserAgent" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpCookies" type="xs:string" minOccurs="0"/>
+							<xs:element name="httpSiteRiskScore" type="xs:string" minOccurs="0"/>
+							<xs:element name="locationIsInsideOffice" type="xs:string" minOccurs="0"/>
+							<xs:element name="restRequestId" type="xs:string" minOccurs="0"/>
+							<xs:element name="restCustom" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileTag" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileFolder" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkIMIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentDetailType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="NetworkNNTPIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:NetworkIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:anyType" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointLocalFileSystemIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="fileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="filePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFileName" type="xs:string" minOccurs="0"/>
+							<xs:element name="sourceFilePath" type="xs:string" minOccurs="0"/>
+							<xs:element name="volumeName" type="xs:string" minOccurs="0"/>
+							<xs:element name="DOSVolumeName" type="xs:string" minOccurs="0"/>
+							<xs:element name="fileLastAccessDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="fileCreateDate" type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointPrintFaxIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="printerName" type="xs:string" minOccurs="0"/>
+							<xs:element name="printJobTitle" type="xs:string" minOccurs="0"/>
+							<xs:element name="content" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointClipboardIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="applicationWindowTitle" type="xs:string"/>
+							<xs:element name="content" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointNetworkIncidentDetailType">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="originator" type="ns1:NetworkOriginatorType" minOccurs="0"/>
+							<xs:element name="recipient" type="ns1:NetworkRecipientType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="messageHeader" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="messageBody" type="ns1:MessageComponentType" minOccurs="0"/>
+							<xs:element name="file" type="ns1:MessageComponentType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointFTPIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentDetailType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointHTTPIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="isHTTPS" type="xs:boolean"/>
+							<xs:element name="messageBodyContent" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointEmailIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+							<xs:element name="messageBodyContent" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointNNTPIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentDetailType">
+						<xs:sequence>
+							<xs:element name="subject" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="EndpointIMIncidentDetail">
+				<xs:complexContent>
+					<xs:extension base="tns:EndpointNetworkIncidentDetailType">
+						<xs:sequence/>
+					</xs:extension>
+				</xs:complexContent>
+			</xs:complexType>
+			<xs:complexType name="ViolatingSegment">
+				<xs:sequence>
+					<xs:element name="documentViolation" minOccurs="0">
+						<xs:complexType>
+							<xs:complexContent>
+								<xs:extension base="ns1:DocumentViolationType">
+									<xs:sequence/>
+									<xs:attribute name="ruleId" type="xs:int"/>
+									<xs:attribute name="ruleName" type="xs:string"/>
+								</xs:extension>
+							</xs:complexContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="fileSizeViolation" minOccurs="0">
+						<xs:complexType>
+							<xs:complexContent>
+								<xs:extension base="ns1:FileSizeViolationType">
+									<xs:sequence/>
+									<xs:attribute name="ruleId" type="xs:int"/>
+									<xs:attribute name="ruleName" type="xs:string"/>
+								</xs:extension>
+							</xs:complexContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="text" nillable="true" minOccurs="0" maxOccurs="unbounded">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="type" type="tns:textType" use="required"/>
+									<xs:attribute name="ruleId" type="xs:int"/>
+									<xs:attribute name="ruleName" type="xs:string"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="ViolatingComponent">
+				<xs:sequence>
+					<xs:element name="name" type="xs:string" minOccurs="0"/>
+					<xs:element name="documentFormat" type="xs:string"/>
+					<xs:element name="violatingComponentType">
+						<xs:complexType>
+							<xs:simpleContent>
+								<xs:extension base="xs:string">
+									<xs:attribute name="id" type="xs:int"/>
+								</xs:extension>
+							</xs:simpleContent>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="violationCount" type="xs:int" minOccurs="0"/>
+					<xs:element name="violatingSegment" type="tns:ViolatingSegment" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="violatingImageInformation" nillable="true" minOccurs="0" maxOccurs="unbounded">
+						<xs:complexType>
+							<xs:complexContent>
+								<xs:extension base="ns1:ImageViolationType">
+									<xs:sequence/>
+									<xs:attribute name="ruleId" type="xs:int"/>
+									<xs:attribute name="ruleName" type="xs:string"/>
+								</xs:extension>
+							</xs:complexContent>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+				<xs:attribute name="id" type="xs:int"/>
+				<xs:attribute name="longId" type="xs:long"/>
+			</xs:complexType>
+			<xs:complexType name="IncidentBinariesResponse">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int"/>
+					<xs:element name="originalMessage" type="xs:base64Binary" minOccurs="0" xmime:expectedContentTypes="application/octet-stream"/>
+					<xs:element name="Component" minOccurs="0" maxOccurs="unbounded">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="componentId" type="xs:int"/>
+								<xs:element name="name" type="xs:string"/>
+								<xs:element name="componentTypeId" type="xs:int"/>
+								<xs:element name="componentType" type="xs:string"/>
+								<xs:element name="content" type="xs:base64Binary" minOccurs="0" xmime:expectedContentTypes="application/octet-stream"/>
+								<xs:element name="componentLongId" type="xs:long"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="incidentLongId" type="xs:long"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="AuthorizationFaultType">
+				<xs:sequence>
+					<xs:element name="errorMessage" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentViolationsResponse">
+				<xs:sequence>
+					<xs:element name="incidentViolation" type="tns:IncidentViolation" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentViolation">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int"/>
+					<xs:element name="statusCode" type="xs:string"/>
+					<xs:element name="violatingComponent" type="tns:ViolatingComponent" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="incidentLongId" type="xs:long"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentUpdateRequest">
+				<xs:sequence>
+					<xs:element name="updateBatch" type="tns:IncidentUpdateBatch" form="unqualified" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentUpdateBatch">
+				<xs:sequence>
+					<xs:element name="batchId" type="xs:string" form="unqualified"/>
+					<xs:element name="incidentId" type="xs:int" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="incidentAttributes" type="tns:IncidentAttributes" form="unqualified"/>
+					<xs:element name="incidentLongId" type="xs:long" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentAttributes">
+				<xs:sequence>
+					<xs:element name="severity" type="ns1:IncidentSeverityType" form="unqualified" minOccurs="0"/>
+					<xs:element name="status" type="ns1:IncidentStatusType" form="unqualified" minOccurs="0"/>
+					<xs:element name="note" type="tns:IncidentNote" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="customAttribute" type="ns1:CustomAttributeType" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="dataOwner" type="ns1:DataOwnerType" form="unqualified" minOccurs="0"/>
+					<xs:element name="remediationStatus" type="xs:string" form="unqualified" minOccurs="0"/>
+					<xs:element name="remediationLocation" type="xs:string" form="unqualified" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentNote">
+				<xs:sequence>
+					<xs:element name="dateAndTime" type="xs:dateTime" form="unqualified" minOccurs="0"/>
+					<xs:element name="note" type="xs:string" form="unqualified"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentNotFoundFaultType">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int"/>
+					<xs:element name="incidentLongId" type="xs:long"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentListResponse">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="incidentLongId" type="xs:long" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="ComponentNotFoundFaultType">
+				<xs:sequence>
+					<xs:element name="componentId" type="xs:int"/>
+					<xs:element name="componentLongId" type="xs:long"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentListRequest">
+				<xs:sequence>
+					<xs:element name="savedReportId" type="xs:int"/>
+					<xs:element name="incidentCreationDateLaterThan" type="xs:dateTime"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentDetailRequest">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="includeViolations" type="xs:boolean" default="true" minOccurs="0"/>
+					<xs:element name="includeHistory" type="xs:boolean" default="true" minOccurs="0"/>
+					<xs:element name="incidentLongId" type="xs:long" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="includeImageViolations" type="xs:boolean" default="false" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="AuthenticationFaultType">
+				<xs:sequence>
+					<xs:element name="errorMessage" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="InvalidRequestFaultType">
+				<xs:sequence>
+					<xs:element name="errorMessage" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentUpdateBatchResult">
+				<xs:sequence>
+					<xs:element name="batchId" type="xs:string" form="unqualified"/>
+					<xs:element name="InaccessibleIncidentId" type="xs:int" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="statusCode" type="xs:string" form="unqualified"/>
+					<xs:element name="InaccessibleIncidentLongId" type="xs:long" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="incidentStatusList">
+				<xs:sequence>
+					<xs:element name="incidentStatusName" type="xs:string" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="customAttributeList">
+				<xs:sequence>
+					<xs:element name="customAttributeName" type="xs:string" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentDetailResult">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int"/>
+					<xs:element name="statusCode" type="xs:string"/>
+					<xs:element name="incident" type="tns:IncidentDetailType" nillable="true"/>
+					<xs:element name="incidentLongId" type="xs:long"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentBinariesRequest">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int"/>
+					<xs:element name="includeOriginalMessage" type="xs:boolean"/>
+					<xs:element name="includeAllComponents" type="xs:boolean"/>
+					<xs:element name="componentId" type="xs:int" minOccurs="0"/>
+					<xs:element name="incidentLongId" type="xs:long" minOccurs="0"/>
+					<xs:element name="componentLongId" type="xs:long" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentUpdateResponse">
+				<xs:sequence>
+					<xs:element name="batchResult" type="tns:IncidentUpdateBatchResult" form="unqualified" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentDetailResponse">
+				<xs:sequence>
+					<xs:element name="response" type="tns:IncidentDetailResult" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="IncidentViolationsRequest">
+				<xs:sequence>
+					<xs:element name="incidentId" type="xs:int" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="incidentLongId" type="xs:long" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="includeImageViolations" type="xs:boolean" default="false" minOccurs="0"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="BasicFault">
+				<xs:sequence>
+					<xs:element name="errorMessage" type="xs:string"/>
+				</xs:sequence>
+			</xs:complexType>
+			<xs:simpleType name="textType">
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="Violation"/>
+					<xs:enumeration value="NonViolation"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:schema>
+	</types>
+	<message name="incidentBinaries">
+		<part name="incidentBinariesRequest" element="ns2:incidentBinariesRequest" xmlns:ns2="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="incidentBinariesResponse">
+		<part name="incidentBinariesResponse" element="ns3:incidentBinariesResponse" xmlns:ns3="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="AuthenticationFailedFault">
+		<part name="fault" element="ns4:AuthenticationFault" xmlns:ns4="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="AuthorizationFailedFault">
+		<part name="fault" element="ns5:AuthorizationFault" xmlns:ns5="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="ComponentNotFoundFault">
+		<part name="fault" element="ns6:ComponentNotFoundFault" xmlns:ns6="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="IncidentNotFoundFault">
+		<part name="fault" element="ns7:IncidentNotFoundFault" xmlns:ns7="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="InvalidRequestFault">
+		<part name="fault" element="ns8:InvalidRequestFault" xmlns:ns8="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="ServiceErrorFault">
+		<part name="fault" element="ns9:BasicFault" xmlns:ns9="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="incidentDetail">
+		<part name="incidentDetailRequest" element="ns10:incidentDetailRequest" xmlns:ns10="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="incidentDetailResponse">
+		<part name="incidentDetailResponse" element="ns11:incidentDetailResponse" xmlns:ns11="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="listCustomAttributes"/>
+	<message name="listCustomAttributesResponse">
+		<part name="customAttributeList" element="ns12:customAttributeList" xmlns:ns12="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="listIncidentStatus"/>
+	<message name="listIncidentStatusResponse">
+		<part name="incidentStatusList" element="ns13:incidentStatusList" xmlns:ns13="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="incidentViolations">
+		<part name="incidentViolationsRequest" element="ns14:incidentViolationsRequest" xmlns:ns14="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="incidentViolationsResponse">
+		<part name="incidentViolationsResponse" element="ns15:incidentViolationsResponse" xmlns:ns15="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="updateIncidents">
+		<part name="incidentUpdateRequest" element="ns16:incidentUpdateRequest" xmlns:ns16="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="updateIncidentsResponse">
+		<part name="incidentUpdateResponse" element="ns17:incidentUpdateResponse" xmlns:ns17="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="incidentList">
+		<part name="incidentListRequest" element="ns18:incidentListRequest" xmlns:ns18="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<message name="incidentListResponse">
+		<part name="incidentListResponse" element="ns19:incidentListResponse" xmlns:ns19="http://www.vontu.com/v2011/enforce/webservice/incident/schema"/>
+	</message>
+	<portType name="IncidentServicePortType">
+		<operation name="incidentBinaries">
+			<input message="tns:incidentBinaries" wsam:Action="incidentBinaries"/>
+			<output message="tns:incidentBinariesResponse" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentBinariesResponse"/>
+			<fault name="AuthenticationFailedFault" message="tns:AuthenticationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentBinaries/Fault/AuthenticationFailedFault"/>
+			<fault name="AuthorizationFailedFault" message="tns:AuthorizationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentBinaries/Fault/AuthorizationFailedFault"/>
+			<fault name="ComponentNotFoundFault" message="tns:ComponentNotFoundFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentBinaries/Fault/ComponentNotFoundFault"/>
+			<fault name="IncidentNotFoundFault" message="tns:IncidentNotFoundFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentBinaries/Fault/IncidentNotFoundFault"/>
+			<fault name="InvalidRequestFault" message="tns:InvalidRequestFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentBinaries/Fault/InvalidRequestFault"/>
+			<fault name="ServiceErrorFault" message="tns:ServiceErrorFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentBinaries/Fault/ServiceErrorFault"/>
+		</operation>
+		<operation name="incidentDetail">
+			<input message="tns:incidentDetail" wsam:Action="incidentDetail"/>
+			<output message="tns:incidentDetailResponse" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentDetailResponse"/>
+			<fault name="AuthenticationFailedFault" message="tns:AuthenticationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentDetail/Fault/AuthenticationFailedFault"/>
+			<fault name="AuthorizationFailedFault" message="tns:AuthorizationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentDetail/Fault/AuthorizationFailedFault"/>
+			<fault name="ServiceErrorFault" message="tns:ServiceErrorFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentDetail/Fault/ServiceErrorFault"/>
+		</operation>
+		<operation name="listCustomAttributes">
+			<input message="tns:listCustomAttributes" wsam:Action="listCustomAttributes"/>
+			<output message="tns:listCustomAttributesResponse" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/listCustomAttributesResponse"/>
+			<fault name="AuthenticationFailedFault" message="tns:AuthenticationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/listCustomAttributes/Fault/AuthenticationFailedFault"/>
+			<fault name="AuthorizationFailedFault" message="tns:AuthorizationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/listCustomAttributes/Fault/AuthorizationFailedFault"/>
+			<fault name="ServiceErrorFault" message="tns:ServiceErrorFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/listCustomAttributes/Fault/ServiceErrorFault"/>
+		</operation>
+		<operation name="listIncidentStatus">
+			<input message="tns:listIncidentStatus" wsam:Action="listIncidentStatus"/>
+			<output message="tns:listIncidentStatusResponse" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/listIncidentStatusResponse"/>
+			<fault name="AuthenticationFailedFault" message="tns:AuthenticationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/listIncidentStatus/Fault/AuthenticationFailedFault"/>
+			<fault name="AuthorizationFailedFault" message="tns:AuthorizationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/listIncidentStatus/Fault/AuthorizationFailedFault"/>
+			<fault name="ServiceErrorFault" message="tns:ServiceErrorFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/listIncidentStatus/Fault/ServiceErrorFault"/>
+		</operation>
+		<operation name="incidentViolations">
+			<input message="tns:incidentViolations" wsam:Action="incidentViolations"/>
+			<output message="tns:incidentViolationsResponse" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentViolationsResponse"/>
+			<fault name="AuthenticationFailedFault" message="tns:AuthenticationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentViolations/Fault/AuthenticationFailedFault"/>
+			<fault name="AuthorizationFailedFault" message="tns:AuthorizationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentViolations/Fault/AuthorizationFailedFault"/>
+			<fault name="ServiceErrorFault" message="tns:ServiceErrorFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentViolations/Fault/ServiceErrorFault"/>
+		</operation>
+		<operation name="updateIncidents">
+			<input message="tns:updateIncidents" wsam:Action="updateIncidents"/>
+			<output message="tns:updateIncidentsResponse" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/updateIncidentsResponse"/>
+			<fault name="AuthenticationFailedFault" message="tns:AuthenticationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/updateIncidents/Fault/AuthenticationFailedFault"/>
+			<fault name="AuthorizationFailedFault" message="tns:AuthorizationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/updateIncidents/Fault/AuthorizationFailedFault"/>
+			<fault name="ServiceErrorFault" message="tns:ServiceErrorFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/updateIncidents/Fault/ServiceErrorFault"/>
+		</operation>
+		<operation name="incidentList">
+			<input message="tns:incidentList" wsam:Action="incidentList"/>
+			<output message="tns:incidentListResponse" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentListResponse"/>
+			<fault name="AuthenticationFailedFault" message="tns:AuthenticationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentList/Fault/AuthenticationFailedFault"/>
+			<fault name="AuthorizationFailedFault" message="tns:AuthorizationFailedFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentList/Fault/AuthorizationFailedFault"/>
+			<fault name="ServiceErrorFault" message="tns:ServiceErrorFault" wsam:Action="http://www.vontu.com/v2011/enforce/webservice/incident/IncidentServicePortType/incidentList/Fault/ServiceErrorFault"/>
+		</operation>
+	</portType>
+	<binding name="IncidentServicePortTypeBinding" type="tns:IncidentServicePortType">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsp:PolicyReference URI="#IncidentServicePortTypeBinding_MTOM_Policy-IncidentServicePortTypeBinding_MTOM_Policy"/>
+		<operation name="incidentBinaries">
+			<soap:operation soapAction="incidentBinaries"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="AuthenticationFailedFault">
+				<soap:fault name="AuthenticationFailedFault" use="literal"/>
+			</fault>
+			<fault name="AuthorizationFailedFault">
+				<soap:fault name="AuthorizationFailedFault" use="literal"/>
+			</fault>
+			<fault name="ComponentNotFoundFault">
+				<soap:fault name="ComponentNotFoundFault" use="literal"/>
+			</fault>
+			<fault name="IncidentNotFoundFault">
+				<soap:fault name="IncidentNotFoundFault" use="literal"/>
+			</fault>
+			<fault name="InvalidRequestFault">
+				<soap:fault name="InvalidRequestFault" use="literal"/>
+			</fault>
+			<fault name="ServiceErrorFault">
+				<soap:fault name="ServiceErrorFault" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="incidentDetail">
+			<soap:operation soapAction="incidentDetail"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="AuthenticationFailedFault">
+				<soap:fault name="AuthenticationFailedFault" use="literal"/>
+			</fault>
+			<fault name="AuthorizationFailedFault">
+				<soap:fault name="AuthorizationFailedFault" use="literal"/>
+			</fault>
+			<fault name="ServiceErrorFault">
+				<soap:fault name="ServiceErrorFault" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="listCustomAttributes">
+			<soap:operation soapAction="listCustomAttributes"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="AuthenticationFailedFault">
+				<soap:fault name="AuthenticationFailedFault" use="literal"/>
+			</fault>
+			<fault name="AuthorizationFailedFault">
+				<soap:fault name="AuthorizationFailedFault" use="literal"/>
+			</fault>
+			<fault name="ServiceErrorFault">
+				<soap:fault name="ServiceErrorFault" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="listIncidentStatus">
+			<soap:operation soapAction="listIncidentStatus"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="AuthenticationFailedFault">
+				<soap:fault name="AuthenticationFailedFault" use="literal"/>
+			</fault>
+			<fault name="AuthorizationFailedFault">
+				<soap:fault name="AuthorizationFailedFault" use="literal"/>
+			</fault>
+			<fault name="ServiceErrorFault">
+				<soap:fault name="ServiceErrorFault" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="incidentViolations">
+			<soap:operation soapAction="incidentViolations"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="AuthenticationFailedFault">
+				<soap:fault name="AuthenticationFailedFault" use="literal"/>
+			</fault>
+			<fault name="AuthorizationFailedFault">
+				<soap:fault name="AuthorizationFailedFault" use="literal"/>
+			</fault>
+			<fault name="ServiceErrorFault">
+				<soap:fault name="ServiceErrorFault" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="updateIncidents">
+			<soap:operation soapAction="updateIncidents"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="AuthenticationFailedFault">
+				<soap:fault name="AuthenticationFailedFault" use="literal"/>
+			</fault>
+			<fault name="AuthorizationFailedFault">
+				<soap:fault name="AuthorizationFailedFault" use="literal"/>
+			</fault>
+			<fault name="ServiceErrorFault">
+				<soap:fault name="ServiceErrorFault" use="literal"/>
+			</fault>
+		</operation>
+		<operation name="incidentList">
+			<soap:operation soapAction="incidentList"/>
+			<input>
+				<soap:body use="literal"/>
+			</input>
+			<output>
+				<soap:body use="literal"/>
+			</output>
+			<fault name="AuthenticationFailedFault">
+				<soap:fault name="AuthenticationFailedFault" use="literal"/>
+			</fault>
+			<fault name="AuthorizationFailedFault">
+				<soap:fault name="AuthorizationFailedFault" use="literal"/>
+			</fault>
+			<fault name="ServiceErrorFault">
+				<soap:fault name="ServiceErrorFault" use="literal"/>
+			</fault>
+		</operation>
+	</binding>
+	<service name="IncidentService">
+		<port name="IncidentServicePortType" binding="tns:IncidentServicePortTypeBinding">
+			<soap:address location="https://yourserver.here:443/ProtectManager/services/v2011/incidents"/>
+		</port>
+	</service>
+	<wsp:Policy wsu:Id="IncidentServicePortTypeBinding_MTOM_Policy-IncidentServicePortTypeBinding_MTOM_Policy">
+		<ns1:OptimizedMimeSerialization xmlns:ns1="http://schemas.xmlsoap.org/ws/2004/09/policy/optimizedmimeserialization" wsp:Optional="true"/>
+	</wsp:Policy>
+</definitions>

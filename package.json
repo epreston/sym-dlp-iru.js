@@ -1,0 +1,26 @@
+{
+  "name": "sym-dlp-iru.js",
+  "version": "1.0.0",
+  "description": "Javascript proxy classes for accessing the \"Symantec DLP Incident Reporting and Update API WSDL\"",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "request": "^2.88.0",
+    "xml2json-temporary": "^0.11.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "symantec",
+    "dlp",
+    "wsdl",
+    "javascript",
+    "api"
+  ],
+  "author": "Ed Preston",
+  "license": "MIT"
+}
