@@ -1,47 +1,68 @@
 # sym-dlp-iru.js
 
-Javascript proxy classes for accessing the "Symantec DLP Incident Reporting and Update API WSDL"
+Javascript proxy classes for accessing the "Symantec DLP Incident Reporting and Update API WSDL" provided by Enforce server versions 14.5 to 15.5.
 
 
 ## Install
 
 Checkout the repo:
-```
+```bash
 git clone https://github.com/epreston/sym-dlp-iru.js.git
 cd sym-dlp-iru.js
 npm install
 ```
 
 ## Requirements and Dependencies
-These are installed with the commands above.
-```
+
+For reference, these library dependencies are installed with the commands above.
+```bash
 npm install request xml2json-temporary lodash
 ```
 
+Follow the API documentation to create the pre-requisites for WSDL access.
+
+- [x] API user created with access permissions applicable to intended usage of the API.
+- [x] API report(s) defined and accessible to the API User
+
+You will need to know:
+
+- The current data and time
+- The network address (or fully qualified name) and configured port of the Enforce Server.
+- The index number of the reports configured for API reporting. `123` is used as an example. Default reports do not work.
+
+
 ## Code Structure
+
 ```
-./[ServiceName]/
+./DLP/
+|
 |   // This holds one file per defined Element within the WSDL
 ├── Element
 │   ├── SomeDefinedElement.js
 |   └── ...
-|   // This is the main file which handles requests, JSON->XML->JSON, etc
-├── index.js
+|
 |   // This is where mock data goes from [myService].Settings.createMock
 ├── Mocks
 │   ├── WsdlOperationName.js
 |   └── ...
-|   // This library provides strong typing, it's used in each Element/Type
-├── Modeler.js
-|   // This file defines the top level functionality found within the WSDL
-├── ServiceDefinition.js
+|
 |   // This holds one file per defined Type within the WSDL
 └── Type
-    ├── SomeDefinedType.js
-    └── ...
+|   ├── SomeDefinedType.js
+|   └── ...
+|
+|   // This is the main file which handles requests, JSON->XML->JSON, etc
+├── index.js
+|
+|   // This library provides strong typing, it's used in each Element/Type
+├── Modeler.js
+|
+|   // This file defines the top level functionality found within the WSDL
+├── ServiceDefinition.js
 ```
 
-## Using the generated code
+## General Code Usage
+
 Start by including the generated code:
 ```javascript
 var DLP = require("lib/DLP");
@@ -106,6 +127,42 @@ someRequest.request(function(err, response) {
 });
 ```
 
+## Specific Examples
+
+List the custom attributes defined in this system.
+```javascript
+// code here
+```
+
+List the incidents from report `123` since the date specified.
+```javascript
+// code here
+```
+
+Retrieve the details of an incident.
+```javascript
+// code here
+```
+
+Retrieve the details of multiple incidents.
+```javascript
+// code here
+```
+
+Retrieve incident attachments.
+```javascript
+// code here
+```
+
+Update an incident.
+```javascript
+// code here
+```
+
+Update multiple incidents
+```javascript
+// code here
+```
 
 ## Runtime Settings and Debugging
 
@@ -161,7 +218,7 @@ additionRequest.request(function(err, response) {
 ## Static Code Analysis
 
 Run the following command:
-```
+```bash
 npm lint
 ```
 
@@ -170,6 +227,6 @@ npm lint
 Testing Requirements TBA
 
 Command:
-```
+```bash
 npm test
 ```
