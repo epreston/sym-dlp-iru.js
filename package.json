@@ -9,7 +9,7 @@
   "dependencies": {
     "request": "^2.88.0",
     "xml2json-temporary": "^0.11.2",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.19"
   },
   "devDependencies": {},
   "scripts": {
